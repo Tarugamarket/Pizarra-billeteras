@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pizarra — Billeteras AR</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root{
+  --board:#173028;
+  --board-dark:#0f231d;
+  --chalk:#EFEBDD;
+  --chalk-dim:#A9B8AC;
+  --line:#33513f;
+  --amber:#E7B23D;
+  --brick:#B8523A;
+  --mono:'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  --sans:'IBM Plex Sans', system-ui, sans-serif;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--board-dark);
+  color:var(--chalk);
+  font-family:var(--sans);
+  padding:28px 16px 60px;
+}
+
+.wrap{max-width:720px;margin:0 auto;}
+
+.masthead{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  border-bottom:2px solid var(--chalk);
+  padding-bottom:10px;
+  margin-bottom:22px;
+}
+.masthead h1{
+  font-family:var(--mono);
+  font-weight:700;
+  font-size:22px;
+  letter-spacing:0.5px;
+  margin:0;
+}
+.masthead .clock{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--chalk-dim);
+}
+
+.board{
+  background:var(--board);
+  border:1px solid var(--line);
+  border-radius:2px;
+  padding:18px 16px;
+  margin-bottom:22px;
+}
+.board h2{
+  font-size:13px;
+  font-weight:500;
+  text-transform:none;
+  color:var(--chalk-dim);
+  margin:0 0 14px 0;
+  font-family:var(--sans);
+}
+
+.dolar-row{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:6px 14px;
+  padding:10px 0;
+  border-bottom:1px solid var(--line);
+  align-items:center;
+}
+.dolar-row:last-child{border-bottom:none;}
+.dolar-nombre{font-size:14px;}
+.dolar-valor{
+  font-family:var(--mono);
+  font-size:17px;
+  font-weight:600;
+  text-align:right;
+  min-width:64px;
+}
+.dolar-label{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--chalk-dim);
+  text-align:right;
+}
+
+.mm-row{
+  display:grid;
+  grid-template-columns:22px 1fr auto auto;
+  gap:4px 12px;
+  padding:11px 0;
+  border-bottom:1px solid var(--line);
+  align-items:center;
+}
+.mm-row:last-child{border-bottom:none;}
+.mm-rank{font-family:var(--mono);color:var(--chalk-dim);font-size:12px;}
+.mm-nombre{font-size:14px;}
+.mm-nombre small{display:block;color:var(--chalk-dim);font-size:11px;margin-top:1px;}
+.mm-tna{font-family:var(--mono);font-size:17px;font-weight:600;text-align:right;}
+.mm-ganancia{font-family:var(--mono);font-size:13px;color:var(--amber);text-align:right;min-width:78px;}
+
+.mm-row.top .mm-tna{color:var(--amber);}
+.mm-row.top .mm-rank{color:var(--amber);}
+
+.calc{
+  display:flex;
+  gap:10px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.calc label{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--chalk-dim);
+  display:block;
+  margin-bottom:4px;
+}
+.calc input, .calc select{
+  background:var(--board-dark);
+  border:1px solid var(--line);
+  color:var(--chalk);
+  font-family:var(--mono);
+  font-size:14px;
+  padding:7px 9px;
+  border-radius:2px;
+  width:100%;
+}
+.calc-field{flex:1;min-width:110px;}
+
+.foot-note{
+  font-size:11px;
+  color:var(--chalk-dim);
+  line-height:1.6;
+  border-top:1px solid var(--line);
+  padding-top:12px;
+  margin-top:6px;
+}
+.foot-note b{color:var(--chalk);}
+
+.legend{
+  font-size:10px;
+  color:var(--chalk-dim);
+  font-family:var(--mono);
+  margin-top:10px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <h1>PIZARRA · AR</h1>
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <div class="board">
+    <h2>Cotización del dólar</h2>
+    <div class="dolar-row">
+      <div class="dolar-nombre">Oficial</div>
+      <div><div class="dolar-valor" id="of-c">1425</div><div class="dolar-label">compra</div></div>
+      <div><div class="dolar-valor" id="of-v">1465</div><div class="dolar-label">venta</div></div>
+    </div>
+    <div class="dolar-row">
+      <div class="dolar-nombre">Blue</div>
+      <div><div class="dolar-valor" id="bl-c">1440</div><div class="dolar-label">compra</div></div>
+      <div><div class="dolar-valor" id="bl-v">1460</div><div class="dolar-label">venta</div></div>
+    </div>
+    <div class="dolar-row">
+      <div class="dolar-nombre">MEP</div>
+      <div><div class="dolar-valor" id="mep-c">1448</div><div class="dolar-label">compra</div></div>
+      <div><div class="dolar-valor" id="mep-v">1455</div><div class="dolar-label">venta</div></div>
+    </div>
+    <div class="legend" id="dolar-legend">actualizando desde DolarApi.com…</div>
+  </div>
+
+  <div class="board">
+    <h2>Money market — cuánto rinden tus pesos</h2>
+    <div class="calc">
+      <div class="calc-field">
+        <label for="monto">MONTO ($)</label>
+        <input type="number" id="monto" value="500000" min="0" step="10000">
+      </div>
+      <div class="calc-field">
+        <label for="dias">DÍAS</label>
+        <input type="number" id="dias" value="30" min="1" max="365">
+      </div>
+    </div>
+    <div id="mm-list"></div>
+    <div class="legend">TNA relevada — el rendimiento diario real varía según la política de cada billetera</div>
+  </div>
+
+  <div class="foot-note">
+    <b>Sobre estos datos:</b> las tasas de money market cambian casi a diario, así que este prototipo usa valores de referencia recientes. Para producción, cada fila necesita una fuente propia (API pública si existe, o carga manual/scraping) actualizada al menos una vez al día.
+  </div>
+
+</div>
+
+<script>
+// Valores de respaldo por si falla la conexión (dólar) o todavía no
+// tenés tasas.json publicado (money market).
+let wallets = [
+  {nombre:"Carrefour Banco", tna:32.00},
+  {nombre:"Brubank", tna:23.00},
+  {nombre:"Prex", tna:23.00},
+  {nombre:"Ualá", nota:"fondo FCI", tna:22.27},
+  {nombre:"Naranja X", tna:22.00},
+  {nombre:"Mercado Pago", tna:19.35},
+  {nombre:"Lemon", tna:17.52},
+];
+
+// ---- DÓLAR: en vivo, directo desde DolarApi.com (gratis, sin auth) ----
+async function actualizarDolar(){
+  try{
+    const res = await fetch('https://dolarapi.com/v1/dolares');
+    if(!res.ok) throw new Error('respuesta no OK');
+    const data = await res.json();
+
+    const casas = { oficial:['of-c','of-v'], blue:['bl-c','bl-v'], bolsa:['mep-c','mep-v'] };
+    let ultimaFecha = null;
+
+    data.forEach(item => {
+      const ids = casas[item.casa];
+      if(ids){
+        document.getElementById(ids[0]).textContent = item.compra.toLocaleString('es-AR');
+        document.getElementById(ids[1]).textContent = item.venta.toLocaleString('es-AR');
+        ultimaFecha = item.fechaActualizacion;
+      }
+    });
+
+    document.getElementById('dolar-legend').textContent =
+      'en vivo · DolarApi.com · actualizado ' + new Date(ultimaFecha).toLocaleString('es-AR', {dateStyle:'short', timeStyle:'short'});
+  }catch(err){
+    document.getElementById('dolar-legend').textContent =
+      'sin conexión con DolarApi.com — mostrando el último valor cargado';
+  }
+}
+
+// ---- MONEY MARKET: no hay una API pública única y confiable.
+// Patrón sugerido: publicás vos un tasas.json (lo actualizás a mano o con
+// un script propio que corra 1 vez por día) y esta pizarra lo lee.
+// Mientras ese archivo no exista, sigue mostrando los valores de respaldo.
+async function actualizarTasas(){
+  try{
+    const res = await fetch('./tasas.json', {cache:'no-store'});
+    if(!res.ok) throw new Error('sin tasas.json');
+    const data = await res.json();
+    if(Array.isArray(data) && data.length) wallets = data;
+  }catch(err){
+    // seguimos con los valores de respaldo definidos arriba
+  }
+  render();
+}
+
+function tea(tna){
+  return (Math.pow(1 + (tna/100)/365, 365) - 1) * 100;
+}
+
+function render(){
+  const monto = parseFloat(document.getElementById('monto').value) || 0;
+  const dias = parseFloat(document.getElementById('dias').value) || 0;
+  const list = document.getElementById('mm-list');
+  list.innerHTML = '';
+
+  const sorted = [...wallets].sort((a,b)=>b.tna-a.tna);
+
+  sorted.forEach((w, i) => {
+    const tasaDiaria = (w.tna/100)/365;
+    const ganancia = monto * tasaDiaria * dias;
+    const row = document.createElement('div');
+    row.className = 'mm-row' + (i===0 ? ' top' : '');
+    row.innerHTML = `
+      <div class="mm-rank">${i+1}</div>
+      <div class="mm-nombre">${w.nombre}${w.nota ? `<small>${w.nota}</small>` : `<small>TEA ${tea(w.tna).toFixed(1)}%</small>`}</div>
+      <div class="mm-tna">${w.tna.toFixed(2)}%</div>
+      <div class="mm-ganancia">+$${ganancia.toLocaleString('es-AR',{maximumFractionDigits:0})}</div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+document.getElementById('monto').addEventListener('input', render);
+document.getElementById('dias').addEventListener('input', render);
+
+render();
+actualizarDolar();
+actualizarTasas();
+setInterval(actualizarDolar, 1000*60*5);   // cada 5 min
+setInterval(actualizarTasas, 1000*60*60);  // cada 1 hora
+
+function tick(){
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleString('es-AR', {dateStyle:'short', timeStyle:'short'});
+}
+tick();
+setInterval(tick, 1000*30);
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+[
+  { "nombre": "Carrefour Banco", "tna": 32.00 },
+  { "nombre": "Brubank", "tna": 23.00 },
+  { "nombre": "Prex", "tna": 23.00 },
+  { "nombre": "Ualá", "nota": "fondo FCI", "tna": 22.27 },
+  { "nombre": "Naranja X", "tna": 22.00 },
+  { "nombre": "Mercado Pago", "tna": 19.35 },
+  { "nombre": "Lemon", "tna": 17.52 }
+]
