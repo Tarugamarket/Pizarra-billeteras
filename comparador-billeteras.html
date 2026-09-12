@@ -197,22 +197,22 @@ body{
   </div>
 
   <div class="foot-note">
-    <b>Sobre estos datos:</b> las tasas de money market cambian casi a diario, así que este prototipo usa valores de referencia recientes. Para producción, cada fila necesita una fuente propia (API pública si existe, o carga manual/scraping) actualizada al menos una vez al día.
+    <b>Sobre estos datos:</b> Mercado Pago, Ualá, Prex y Lemon se actualizan solos todos los días desde datos oficiales de la CNV. Carrefour Banco, Naranja X y Brubank se actualizan a mano en tasas_manual.json.
   </div>
 
 </div>
 
 <script>
 // Valores de respaldo por si falla la conexión (dólar) o todavía no
-// tenés tasas.json publicado (money market).
+// tenés tasas_fci.json / tasas_manual.json publicados.
 let wallets = [
-  {nombre:"Carrefour Banco", tna:32.00},
-  {nombre:"Brubank", tna:23.00},
-  {nombre:"Prex", tna:23.00},
-  {nombre:"Ualá", nota:"fondo FCI", tna:22.27},
-  {nombre:"Naranja X", tna:22.00},
-  {nombre:"Mercado Pago", tna:19.35},
-  {nombre:"Lemon", tna:17.52},
+  {nombre:"Carrefour Banco", tna:20.00},
+  {nombre:"Brubank", tna:18.00},
+  {nombre:"Prex", nota:"fondo FCI", tna:19.95},
+  {nombre:"Ualá", nota:"fondo FCI", tna:19.88},
+  {nombre:"Naranja X", tna:19.00},
+  {nombre:"Mercado Pago", nota:"fondo FCI", tna:19.20},
+  {nombre:"Lemon", nota:"fondo FCI", tna:20.58},
 ];
 
 // ---- DÓLAR: en vivo, directo desde DolarApi.com (gratis, sin auth) ----
@@ -242,19 +242,22 @@ async function actualizarDolar(){
   }
 }
 
-// ---- MONEY MARKET: no hay una API pública única y confiable.
-// Patrón sugerido: publicás vos un tasas.json (lo actualizás a mano o con
-// un script propio que corra 1 vez por día) y esta pizarra lo lee.
-// Mientras ese archivo no exista, sigue mostrando los valores de respaldo.
+// ---- MONEY MARKET: se combina de dos archivos.
+// tasas_fci.json    -> lo pisa solo el robot todos los días (4 billeteras con fondo público)
+// tasas_manual.json -> lo editás vos a mano de vez en cuando (3 billeteras con tasa propia)
 async function actualizarTasas(){
+  const partes = [];
   try{
-    const res = await fetch('./tasas.json', {cache:'no-store'});
-    if(!res.ok) throw new Error('sin tasas.json');
-    const data = await res.json();
-    if(Array.isArray(data) && data.length) wallets = data;
-  }catch(err){
-    // seguimos con los valores de respaldo definidos arriba
-  }
+    const res1 = await fetch('./tasas_fci.json', {cache:'no-store'});
+    if(res1.ok) partes.push(...(await res1.json()));
+  }catch(err){ /* seguimos con lo que haya */ }
+
+  try{
+    const res2 = await fetch('./tasas_manual.json', {cache:'no-store'});
+    if(res2.ok) partes.push(...(await res2.json()));
+  }catch(err){ /* seguimos con lo que haya */ }
+
+  if(partes.length) wallets = partes;
   render();
 }
 
@@ -303,3 +306,4 @@ setInterval(tick, 1000*30);
 </script>
 </body>
 </html>
+
