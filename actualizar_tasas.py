@@ -48,27 +48,44 @@ def tna_desde_fci(nombre_fondo):
         raise ValueError(f"Sin histórico para {nombre_fondo}")
 
     ultimo = historico[-1]
-    retorno_diario = ultimo["retornoDiario"]  # verificar si viene en % o fracción
-    # Si retornoDiario viene como fracción (ej 0.00075) -> TNA = retorno*365*100
-    # Si ya viene en % (ej 0.075) -> TNA = retorno*365
-    # Chequeá el valor real la primera vez que corras esto y ajustá el factor.
-    tna = retorno_diario * 365 * 100
+    retorno_diario = ultimo["retornoDiario"]  # ya viene expresado en % (ej 0.0515 = 0.0515%)
+    tna = retorno_diario * 365
     return round(tna, 2), ultimo["fecha"]
+
+
+_COMPARATASAS_HTML = None
+
+
+def _get_comparatasas_html():
+    """Descarga la página una sola vez y la reutiliza para las 3 búsquedas."""
+    global _COMPARATASAS_HTML
+    if _COMPARATASAS_HTML is None:
+        resp = requests.get(COMPARATASAS_URL, timeout=20, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                          "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+        })
+        if resp.status_code != 200:
+            raise ValueError(f"comparatasas.ar respondió con status {resp.status_code}")
+        if len(resp.text) < 2000:
+            raise ValueError(f"comparatasas.ar devolvió una página sospechosamente corta "
+                              f"({len(resp.text)} caracteres) — puede ser un bloqueo anti-bot")
+        _COMPARATASAS_HTML = resp.text
+    return _COMPARATASAS_HTML
 
 
 def tna_desde_comparatasas(nombre_billetera, etiqueta_busqueda):
     """Busca la TNA de una billetera dentro del HTML de comparatasas.ar."""
-    resp = requests.get(COMPARATASAS_URL, timeout=15, headers={
-        "User-Agent": "Mozilla/5.0 (compatible; PizarraBot/1.0)"
-    })
-    resp.raise_for_status()
-    html = resp.text
+    html = _get_comparatasas_html()
 
     # Patrón: "<Billetera>...NN.NN% TNA"
     patron = re.escape(etiqueta_busqueda) + r".{0,400}?(\d{1,2}[.,]\d{1,2})\s*%\s*TNA"
     match = re.search(patron, html, re.DOTALL)
     if not match:
-        raise ValueError(f"No encontré la tasa de {nombre_billetera} en comparatasas.ar")
+        raise ValueError(
+            f"No encontré la tasa de {nombre_billetera} en comparatasas.ar "
+            f"(la página cargó bien, {len(html)} caracteres, pero el patrón de texto no coincidió — "
+            f"puede que el sitio haya cambiado de formato)"
+        )
 
     tna = float(match.group(1).replace(",", "."))
     return tna
@@ -118,3 +135,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    
